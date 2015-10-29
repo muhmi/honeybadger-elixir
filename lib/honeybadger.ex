@@ -92,12 +92,13 @@ defmodule Honeybadger do
   def start(_type, _opts) do
     app_config = Application.get_all_env(:honeybadger)
     config = Keyword.merge(default_config, app_config)
+    exclude_envs = Keyword.get config, :exclude_envs, [:dev, :test]
 
     Enum.map config, fn({key, value}) ->
       Application.put_env(:honeybadger, key, value)
     end
 
-    if config[:use_logger] do
+    if config[:use_logger] and not Utils.environment_name in exclude_envs do
       :error_logger.add_report_handler(Honeybadger.Logger)
     end
 
